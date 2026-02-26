@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo Casino Pro 🎰</title>
+
+
+</head>
+
+<body>
+
+<!-- INSTRUCTION SCREEN -->
+<div class="screen" id="intro">
+  <h1>🎰 SOLO CASINO PRO</h1>
+  <div class="card">
+    <h3>📜 How To Play</h3>
+    <p>
+      • Start with 100 coins<br>
+      • Enter your bet amount<br>
+      • Match 3 = Big Win<br>
+      • Match 2 = Small Win<br>
+      • 💎 = 10x Jackpot<br>
+      • Use RISK to double your win<br>
+      • Try to reach highest balance!
+    </p>
+  </div>
+  <button onclick="startGame()">START GAME</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen hidden" id="game">
+
+  <h1>🎰 CASINO</h1>
+
+  <div class="card">
+    Balance: 💰 <span id="money">100</span><br>
+    High Score: 🏆 <span id="highscore">100</span>
+  </div>
+
+  <div>
+    Bet: <input type="number" id="bet" value="10" min="1">
+  </div>
+
+  <div class="slot">
+    <div class="reel" id="r1">❓</div>
+    <div class="reel" id="r2">❓</div>
+    <div class="reel" id="r3">❓</div>
+  </div>
+
+  <button onclick="spin()">SPIN</button>
+  <button onclick="doubleOrNothing()">RISK</button>
+
+  <div id="result" class="card"></div>
+
+  <div class="card leaderboard">
+    <h3>🏆 Leaderboard (Session)</h3>
+    <div id="leaderboardList">No scores yet</div>
+  </div>
+
+</div>
+
+<script>
+
+let symbols=["💎","🍒","7️⃣","💰","🔥","⭐"];
+let balance=100;
+let highscore=100;
+let lastWin=0;
+let spinning=false;
+let leaderboard=[];
+
+function startGame(){
+  document.getElementById("intro").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+}
+
+function updateUI(){
+  money.innerText=balance;
+  highscore.innerText=highscore;
+}
+
+function updateLeaderboard(){
+  leaderboard.sort((a,b)=>b-a);
+  leaderboard=leaderboard.slice(0,5);
+
+  if(leaderboard.length===0){
+    leaderboardList.innerHTML="No scores yet";
+    return;
+  }
+
+  leaderboardList.innerHTML="";
+  leaderboard.forEach((score,i)=>{
+    leaderboardList.innerHTML+= (i+1)+". 💰 "+score+"<br>";
+  });
+}
+
+function spin(){
+
+  if(spinning) return;
+
+  let bet=parseInt(document.getElementById("bet").value);
+
+  if(bet<=0 || bet>balance){
+    result.innerHTML="❌ Invalid Bet!";
+    return;
+  }
+
+  balance-=bet;
+  updateUI();
+
+  spinning=true;
+  result.innerHTML="🎰 Spinning...";
+
+  let interval=setInterval(()=>{
+    r1.innerHTML=symbols[Math.floor(Math.random()*symbols.length)];
+    r2.innerHTML=symbols[Math.floor(Math.random()*symbols.length)];
+    r3.innerHTML=symbols[Math.floor(Math.random()*symbols.length)];
+  },100);
+
+  setTimeout(()=>{
+    clearInterval(interval);
+
+    let a=r1.innerHTML;
+    let b=r2.innerHTML;
+    let c=r3.innerHTML;
+
+    let win=0;
+
+    if(a===b && b===c){
+      win=(a==="💎")?bet*10:bet*5;
+    }
+    else if(a===b || b===c || a===c){
+      win=bet*2;
+    }
+
+    if(win>0){
+      result.innerHTML="🔥 Won +"+win;
+    }else{
+      result.innerHTML="💀 Lost!";
+    }
+
+    balance+=win;
+    lastWin=win;
+
+    if(balance>highscore){
+      highscore=balance;
+      leaderboard.push(highscore);
+      updateLeaderboard();
+    }
+
+    updateUI();
+    spinning=false;
+
+  },2000);
+}
+
+function doubleOrNothing(){
+
+  if(lastWin<=0){
+    result.innerHTML="❌ No win to risk!";
+    return;
+  }
+
+  if(Math.random()<0.5){
+    balance+=lastWin;
+    result.innerHTML="🔥 Doubled!";
+  }else{
+    balance-=lastWin;
+    result.innerHTML="💀 Lost Risk!";
+  }
+
+  lastWin=0;
+  updateUI();
+}
+
+updateUI();
+
+</script>
+
+</body>
+</html
